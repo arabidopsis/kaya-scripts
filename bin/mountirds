@@ -1,0 +1,31 @@
+#!/bin/bash
+# check for $DBUS_SESSION_BUS_ADDRESS
+# run `dbus-run-session -- bash`
+# then run ~/mountirds.sh
+
+IRDS="drive.irds.uwa.edu.au"
+DOMAIN="uniwa"
+# Conny
+SHARE="SMS-B-003"
+
+link=~/irds
+
+# file with:
+# username=00033472
+# password=.....
+source ~/.cifs-credentials
+
+rm -f ${link} 2>/dev/null
+
+echo -e "${username}\n${DOMAIN}\n${password}\n" | /usr/bin/gio mount "smb://${IRDS}/${SHARE}" > /dev/null 2>&1
+
+if [ $? -eq 0 ]; then
+    # ${SHARE,,} => lowercase
+    IRDS="/run/user/${UID}/gvfs/smb-share:server=${IRDS,,},share=${SHARE,,}"
+    echo "linking to: ${link}"
+    ln -s ${IRDS} ${link}
+else
+
+    echo  "Something went wrong. Mount failed. Check the mount listing with 'gio mount -l'" 1>&2
+    exit 1
+fi
