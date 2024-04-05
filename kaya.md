@@ -25,7 +25,6 @@ This is a WIP!
 - [SLURM Gist](https://gist.github.com/ctokheim/bf68b2c4b78e9851b469be3425470699)
 - HPC @ CECI about slurm and clusters: [Tutorial](https://support.ceci-hpc.be/doc/_contents/QuickStart/SubmittingJobs/SlurmTutorial.html)
 - Research Computing University of Colorado Boulder: https://curc.readthedocs.io/en/latest/index.html
-
 - [tmux tutorial](https://medium.com/@hammad.ai/how-i-learned-tmux-became-a-workflow-ninja-7d33cc796793>)
 
 ## Questions
@@ -197,8 +196,8 @@ Run with `srun --cpus-per-task=4 --partition=work julia jrun.jl`
 
 see: https://docs.julialang.org/en/v1/manual/environment-variables/
 
-juliaup creates a repo in ~/.julia. Maybe alter `JULIA_DEPOT_PATH="/home/group/julia/depot:$JULIA_DEPOT_PATH"`
-so that packages get put in `/home/group/julia/depot`.
+juliaup creates a repo in `~/.julia`. Maybe alter `JULIA_DEPOT_PATH="/group/julia/depot:$JULIA_DEPOT_PATH"`
+so that packages get put in `/group/julia/depot`.
 
 ## Mount IRDS:
 
@@ -364,7 +363,7 @@ Run programs dependent scripts from within slurm.
   # source $HOME/.bashrc
   source ${CONDA_PREFIX:-$(dirname ${CONDA_EXE})/..}/etc/profile.d/conda.sh
 
-  conda activate /group/training/training54/conda_environments/bioinfo
+  micromamba activate py312
   echo "activated ${CONDA_PREFIX} with python version: $(python -V) @ $(which python)"
   # run your scripts..
   python mybioinfo.py
