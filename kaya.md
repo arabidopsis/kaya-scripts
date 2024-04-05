@@ -2,15 +2,17 @@
 
 ## Table of Contents
 
-- [Parallelism](#running-in-parallel)
-- [Julia](#julia)
-- [Modules](#modules)
-- [Mounting IRDS](#mount-irds)
+- [Environment Variables](#environment-variables)
 - [Setup SSH Keys](#setup-ssh-keys)
+- [Copying files to Kaya](copying-files-to-kaya)
+- [Running in Parallel](#running-in-parallel)
+- [Julia](#julia)
+- [Mounting IRDS](#mount-irds)
+- [Install R kernel for jupyter](#install-r-kernel-for-jupyter)
+- [Modules](#modules)
+- [Conda](#conda)
 
-### notes:
-
-References:
+### References:
 
 - UWA HPC: https://docs.hpc.uwa.edu.au/
 - HPC monitor: https://monitor.hpc.uwa.edu.au/
@@ -93,6 +95,7 @@ Host kaya
   User icastleden
   IdentityFile ~/.ssh/kaya
 ```
+
 Now run:
 
 ```bash
@@ -104,7 +107,6 @@ Now run:
 ```
 
 ## Copying files to Kaya
-
 
 `scp` files to kaya
 `rsync` works too
@@ -148,7 +150,7 @@ Note that `--exclusive` means don't share allocated nodes with other jobs [ref](
 
 Julia is probably the simplest way to get running multiple cpus on kaya using `Distributed`.
 
-### notes:
+### links:
 
 - [Julia manual](https://docs.julialang.org/en/v1/manual/distributed-computing/)
 - See [Running Parallel Julia Scripts using the Distributed Package](https://researchcomputing.princeton.edu/support/knowledge-base/julia#distributed)
@@ -189,14 +191,14 @@ Run with `srun --cpus-per-task=4 --partition=work julia jrun.jl`
   rmprocs(workers()...)
 ```
 
-## Julia Repos
+### Julia Repos
 
 see: https://docs.julialang.org/en/v1/manual/environment-variables/
 
 juliaup creates a repo in ~/.julia. Maybe alter `JULIA_DEPOT_PATH="/home/group/julia/depot:$JULIA_DEPOT_PATH"`
 so that packages get put in `/home/group/julia/depot`.
 
-# Mount IRDS:
+## Mount IRDS:
 
 See: https://en.wikipedia.org/wiki/GIO_(software)
 
@@ -247,8 +249,7 @@ Notes:
 ## Install R kernel for jupyter
 
 ```bash
-
-  module load r/4.0.5 Anaconda3
+  module load r/4.0.5
   module load Anaconda3
   R
   # > install.packages('IRkernel', repos = "https://cloud.r-project.org")
@@ -258,30 +259,22 @@ Notes:
 
 ## Modules
 
-### notes:
+### links:
 
-- Module [Read The Docs](https://modules.readthedocs.io)
-- [Tcl Language Home Page](https://www.tcl-lang.org/)
-- Princeton [Custom Modules](https://researchcomputing.princeton.edu/support/knowledge-base/custom-modules)
-  and [julia](https://researchcomputing.princeton.edu/support/knowledge-base/julia)
+- Module [Read The Docs](https://modules.readthedocs.io) ([module specific Tcl commands](https://modules.readthedocs.io/en/latest/modulefile.html))
+- [Tool Command Language (Tcl) Home Page](https://www.tcl-lang.org/). See if you have tclsh already installed.
+- Princeton tutorial [Creating Your Own Environment Modules](https://researchcomputing.princeton.edu/support/knowledge-base/custom-modules)
+  and for [julia](https://researchcomputing.princeton.edu/support/knowledge-base/julia)
 
 Module for julia. usage: `module load julia/1.10`.
 This is a **tcl** script (https://www.tcl-lang.org/).
-Create a file `~/Modules/modulefiles/julia/1.10` Then
-add `module use --append /home/aturing/Modules/modulefiles` to `~/.bash_profile`
+Create a file `/group/peb007/modules/julia/1.10` Then
+add the line `module use --append /group/peb007/modules` to `~/.bash_profile`
 to add it to `MODULEPATH`.
 
 ```tcl
-
   #%Module
-  # file ~/Modules/modulefiles/julia/1.10
-  # from https://researchcomputing.princeton.edu/support/knowledge-base/custom-modules
-  # and https://modules.readthedocs.io/en/latest/modulefile.html
-
-  # add `module use --append ~/Modules/modulefiles` to ~/.bash_profile to
-  # add path to MODULEPATH
-  # get julia: `curl -fsSL https://install.julialang.org | sh`
-
+  # file: /group/peb007/modules/julia/1.10
 
   # `module help julia`
   proc ModulesHelp {} {
@@ -289,19 +282,42 @@ to add it to `MODULEPATH`.
 
   }
 
-  module-version 1.10 default
-
   # for module whatis
   module-whatis "Adds julia 1.10 to PATH
   and goes on"
 
   # julia -e 'print(Sys.BINDIR)'
-  prepend-path PATH "/home/training/training54/.julia/juliaup/julia-1.10.1+0.x64.linux.gnu/bin"
-  # *OR*
-  prepend-path PATH "[julia -e 'print(Sys.BINDIR)']"
+  set group "/group/peb007"
+  prepend-path PATH "${group}/.julia/juliaup/julia-1.10.1+0.x64.linux.gnu/bin"
 ```
 
-## Activating a conda environment from within slurm
+## Conda
+
+We prefer to use micromamba which is a drop-in replacement for
+conda and also a simple executable (that is installed in `~/.local/bin/micromamba`)
+
+```bash
+  "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
+```
+
+You need to set `MAMBA_ROOT_PREFIX` to `/group/peb007/micromamba` which will
+place all subsequent environments under `${MAMBA_ROOT_PREFIX}/envs`.
+
+This can be done during the install when the installer asks `Prefix location? [~/micromamba]`
+
+### Create a new environment
+
+```bash
+# create a new environment *with* a python
+micromamba env create -n my_new_env python=3.12
+ls -l $MAMBA_ROOT_PREFIX/envs/my_new_env
+micromamba env list
+micromamba activate my_new_env
+python # should be version 3.12
+micromamba deactivate
+```
+
+### Activating a conda environment from within slurm
 
 A conda enviroment that work for you or your group is the best way to go.
 
@@ -312,7 +328,7 @@ First create an environment.
   # load "base" conda environment
   module load Anaconda3/2020.11
   # create an environment somewhere....
-  conda create -p /group/training/training54/conda_environments/bioinfo -c conda-forge mamba
+  conda create -p /group/peb007/envs/bioinfo -c conda-forge mamba
   # *OR* just a python version
   # conda create -p /group/training/training54/conda_environments/bioinfo python=3.12
   # avoid long names in shell prompt

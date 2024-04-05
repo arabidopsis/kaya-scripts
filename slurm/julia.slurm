@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #SBATCH --partition=work
 #SBATCH -n 1
 #SBATCH -o bioinfo_%j.out
@@ -12,6 +12,7 @@
 module load julia/1.10.2
 echo "running on: $(hostname) : ${SLURM_TASK_PID} julia=$(julia -e 'print(Sys.BINDIR)')"
 
+# expecting /group/peb007/.julia
 echo "depot=$JULIA_DEPOT_PATH"
 
 julia -e 'println("version is: $(VERSION)")'

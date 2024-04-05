@@ -3,8 +3,8 @@
 #SBATCH -n 1
 #SBATCH -o bioinfo_%j.out
 #SBATCH --export=NONE
-
-export MAMBA_ENV=py312
+# environment created by micromamba env create -n py312 python=3.12
+export CONDA_DEFAULT_ENV=py312
 module load mamba
 
 echo "activated ${CONDA_PREFIX}"

@@ -4,16 +4,15 @@ proc ModulesHelp {} {
     puts stderr "setup a conda environment [uname machine]."
 
 }
-
 # for module whatis
 module-whatis "setup a conda environment"
+
 set prefix "/group/peb007/micromamba"
-# set MAMBA_ENV (name) in slurm file
-set myenv "[getenv MAMBA_ENV]"
+# set CONDA_DEFAULT_ENV (name) in slurm file
+set myenv "[getenv CONDA_DEFAULT_ENV "base"]"
 setenv CONDA_PREFIX "${prefix}/envs/${myenv}"
 setenv CONDA_SHLVL "1"
 setenv CONDA_DEFAULT_ENV "${myenv}"
 setenv CONDA_PROMPT_MODIFIER "(${myenv}) "
 
-# julia -e 'print(Sys.BINDIR)'
 prepend-path PATH "${prefix}/envs/${myenv}/bin"
