@@ -1,0 +1,15 @@
+#!/bin/bash
+directory=~/irds
+while getopts :d:h flag
+do
+    case "${flag}" in 
+        d) directory=${OPTARG};;
+        h) echo  "Usage: $0 [-h] -d link_directory" 
+            exit 0;;
+        ?) echo "Invalid option: -${OPTARG}" 1>&2
+            echo "Usage: $0 [-h] -d link_directory" 1>&2
+            exit 1
+        ;;
+    esac
+done
+exec /usr/bin/gio mount --unmount "$(readlink ${directory})"

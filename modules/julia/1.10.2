@@ -11,7 +11,8 @@ module-version 1.10.2 default
 module-whatis "Adds julia 1.10.2 to PATH"
 
 # where to store
-setenv JULIA_DEPOT_PATH "/group/peb007/.julia"
+set group "/group/peb007"
+setenv JULIA_DEPOT_PATH "${group}/.julia"
 
 # julia -e 'print(Sys.BINDIR)'
-prepend-path PATH "/group/peb007/.julia/juliaup/julia-1.10.2+0.x64.linux.gnu/bin"
+prepend-path PATH "${group}/.julia/juliaup/julia-1.10.2+0.x64.linux.gnu/bin"

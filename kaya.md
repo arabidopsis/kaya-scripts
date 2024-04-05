@@ -1,6 +1,14 @@
 # KAYA
 
-.. note::
+## Table of Contents
+
+- [Parallelism](#running-in-parallel)
+- [Julia](#julia)
+- [Modules](#modules)
+- [Mounting IRDS](#mount-irds)
+- [Setup SSH Keys](#setup-ssh-keys)
+
+### notes:
 
 References:
 
@@ -9,22 +17,29 @@ References:
 - Software Carpentry: https://software-carpentry.org/
   and https://swcarpentry.github.io/
 - https://ondemand.hpc.uwa.edu.au/
-- Ryan's Kaya setup: https://github.com/cpflueger2016/Kaya-ListerLab-Tutorial
+- Ryan's Kaya setup: [github](https://github.com/cpflueger2016/Kaya-ListerLab-Tutorial)
 - [SLURM Gist](https://gist.github.com/ctokheim/bf68b2c4b78e9851b469be3425470699)
 - HPC @ CECI about slurm and clusters: [Tutorial](https://support.ceci-hpc.be/doc/_contents/QuickStart/SubmittingJobs/SlurmTutorial.html)
 - Research Computing University of Colorado Boulder: https://curc.readthedocs.io/en/latest/index.html
-- Custom Modules: https://researchcomputing.princeton.edu/support/knowledge-base/custom-modules
-  and [julia](https://researchcomputing.princeton.edu/support/knowledge-base/julia>)
-  and https://modules.readthedocs.io/en/latest/modulefile.html
+
 - [tmux tutorial](https://medium.com/@hammad.ai/how-i-learned-tmux-became-a-workflow-ninja-7d33cc796793>)
 
 ## Questions
 
 - Does sbatch take a copy of the script passed in?
 - Does the slurm script run .bashrc or .bash_profile? (if we have a shebang of: `#!/usr/bin/bash --login`)
-  (A test suggests that `.bashrc` is **not** sourced/run)
 
-Slurm environment variables
+## Environment Variables
+
+With `#SBATCH --export=None` set (from [ref](https://slurm.schedmd.com/sbatch.html#OPT_export_3)):
+
+> However, Slurm will then implicitly attempt to load the user's environment
+> on the node where the script is being executed, as if `--get-user-env` was specified
+
+> The environment variables are retrieved by running something of
+> this sort "`su --login <username> -c /usr/bin/env`" and parsing the output.
+
+### SLURM Environment Variables
 
 ```bash
 
@@ -68,27 +83,35 @@ Slurm environment variables
 
 ## Setup SSH Keys
 
-Use sshkey to login to kaya
+Use a ssh key to login to kaya:
+
+Add or create a file `~/.ssh/config` on your local machine and add
+
+```
+Host kaya
+  Hostname kaya.hpc.uwa.edu.au
+  User icastleden
+  IdentityFile ~/.ssh/kaya
+```
+Now run:
 
 ```bash
-
-  # cat ~/.ssh/config
-  # Host kaya
-  #   Hostname kaya.hpc.uwa.edu.au
-  #   User training54
-  #   # IdentityFile ~/.ssh/kaya
-
   ssh-keygen -t rsa -b 4096 -f ~/.ssh/kaya
-  # This will ask for password
+  # This will ask for your *kaya* password
   ssh-copy-id -i ~/.ssh/kaya.pub kaya
-  # **uncomment IdentityFile in ~/.ssh/config**
+  # should now be able to log straight in!
   ssh kaya
 ```
 
-Things to ask
+## Copying files to Kaya
+
 
 `scp` files to kaya
 `rsync` works too
+
+```bash
+rsync -av local/directory kaya:
+```
 
 ## Running in parallel
 
@@ -111,24 +134,27 @@ _OR_ with gnu parallel (which is on kaya)
 
 ```bash
 
-  #!/usr/bin/bash
+  #!/bin/bash
   #SBATCH --ntasks=8
 
-  parallel -P $SLURM_NTASKS srun -N1 -c1 -n1 --exact ./myprog ::: /path/to/data/*
+  parallel -P $SLURM_NTASKS srun -nodes=1 --cpus-per-task=1 -ntasks=1 --exact ./myprog ::: /path/to/data/*
   # *OR*
-  find /path/to/data -print0 | xargs -0 -n1 -P $SLURM_NTASKS srun -n1 --exclusive ./myprog
+  find /path/to/data -print0 | xargs -0 -max-args=1 -P $SLURM_NTASKS srun -ntasks=1 --exclusive ./myprog
 ```
+
+Note that `--exclusive` means don't share allocated nodes with other jobs [ref](https://slurm.schedmd.com/srun.html#OPT_exclusive).
 
 ## Julia
 
 Julia is probably the simplest way to get running multiple cpus on kaya using `Distributed`.
 
-.. note::
+### notes:
 
-- https://docs.julialang.org/en/v1/manual/distributed-computing/
+- [Julia manual](https://docs.julialang.org/en/v1/manual/distributed-computing/)
 - See [Running Parallel Julia Scripts using the Distributed Package](https://researchcomputing.princeton.edu/support/knowledge-base/julia#distributed)
+- Princeton [julia](https://researchcomputing.princeton.edu/support/knowledge-base/julia)
 
-Run with `srun --cpus-per-task=4 --partition=test julia jrun.jl`
+Run with `srun --cpus-per-task=4 --partition=work julia jrun.jl`
 
 ```julia
 
@@ -232,12 +258,12 @@ Notes:
 
 ## Modules
 
-.. note::
+### notes:
 
-see:
-
-- https://modules.readthedocs.io
-- https://www.tcl-lang.org/
+- Module [Read The Docs](https://modules.readthedocs.io)
+- [Tcl Language Home Page](https://www.tcl-lang.org/)
+- Princeton [Custom Modules](https://researchcomputing.princeton.edu/support/knowledge-base/custom-modules)
+  and [julia](https://researchcomputing.princeton.edu/support/knowledge-base/julia)
 
 Module for julia. usage: `module load julia/1.10`.
 This is a **tcl** script (https://www.tcl-lang.org/).

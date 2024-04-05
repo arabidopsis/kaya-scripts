@@ -1,29 +1,53 @@
 #!/bin/bash
 # check for $DBUS_SESSION_BUS_ADDRESS
 # run `dbus-run-session -- bash`
-# then run ~/mountirds.sh
+# then run mountirds
 
 IRDS="drive.irds.uwa.edu.au"
 DOMAIN="uniwa"
 # Conny
 SHARE="SMS-B-003"
 
-link=~/irds
 
-# file with:
-# username=00033472
-# password=.....
-source ~/.cifs-credentials
+directory=~/irds
+credentials=~/.irds-credentials
 
-rm -f ${link} 2>/dev/null
+while getopts :d:p:u:c:h flag
+do
+    case "${flag}" in 
+        d) directory=${OPTARG};;
+        u) username=${OPTARG};;
+        p) password=${OPTARG};;
+        c) credentials=${OPTARG};;
+        h) echo  "Usage: $0 [-h] -d link_directory -u username -p password -c credentials" 
+            exit 0;;
+        ?) echo "Invalid option: -${OPTARG}" 1>&2
+            echo "Usage: $0 [-h] -d link_directory -u username -p password -c credentials" 1>&2
+            exit 1
+        ;;
+    esac
+done
+if [ -f "$credentials" ] && [ -z ${username+x} ] ; then
+    # file with:
+    # username=00033472
+    # password=.....
+    source "$credentials"
+fi
+if [ -z ${password+x} ] && [ -z ${username+x} ] ; then
+    echo "No credentials!" 1>&2
+    exit 1
+fi
+
+
+rm -f ${directory} 2>/dev/null
 
 echo -e "${username}\n${DOMAIN}\n${password}\n" | /usr/bin/gio mount "smb://${IRDS}/${SHARE}" > /dev/null 2>&1
 
 if [ $? -eq 0 ]; then
     # ${SHARE,,} => lowercase
     IRDS="/run/user/${UID}/gvfs/smb-share:server=${IRDS,,},share=${SHARE,,}"
-    echo "linking to: ${link}"
-    ln -s ${IRDS} ${link}
+    echo "linking to: ${directory}"
+    ln -s ${IRDS} ${directory}
 else
 
     echo  "Something went wrong. Mount failed. Check the mount listing with 'gio mount -l'" 1>&2
