@@ -4,9 +4,13 @@
 #SBATCH -o bioinfo_%j.out
 #SBATCH --export=NONE
 
+# You have installed micromamba with
 
 # "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
 # source ~/.bashrc
+
+# and created an environment
+
 # micromamba create -n py312 python=3.12
 
 echo "running on: $(hostname) : ${SLURM_TASK_PID} with mamba=${MAMBA_EXE}"

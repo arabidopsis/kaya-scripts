@@ -7,12 +7,16 @@ proc ModulesHelp {} {
 # for module whatis
 module-whatis "setup a conda environment"
 
-set prefix "/group/peb007/micromamba"
+# we set up micromamba to place MAMBA_ROOT_PREFIX here...
+set MAMBA_ROOT_PREFIX "/group/peb007/micromamba"
 # set CONDA_DEFAULT_ENV (name) in slurm file
 set myenv "[getenv CONDA_DEFAULT_ENV "base"]"
-setenv CONDA_PREFIX "${prefix}/envs/${myenv}"
+# these are the environment and PATH variables that 
+# `$MAMBA_EXE shell activate py312 --shell bash`
+# returns
+setenv CONDA_PREFIX "${MAMBA_ROOT_PREFIX}/envs/${myenv}"
 setenv CONDA_SHLVL "1"
 setenv CONDA_DEFAULT_ENV "${myenv}"
 setenv CONDA_PROMPT_MODIFIER "(${myenv}) "
 
-prepend-path PATH "${prefix}/envs/${myenv}/bin"
+prepend-path PATH "${MAMBA_ROOT_PREFIX}/envs/${myenv}/bin"

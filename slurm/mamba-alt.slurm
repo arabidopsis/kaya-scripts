@@ -4,7 +4,7 @@
 #SBATCH -o bioinfo_%j.out
 #SBATCH --export=NONE
 
-# slightly different from mamba.slurm
+# slightly different from mamba.slurm directly using ${MAMBA_EXE}
 
 echo "running on: $(hostname) : ${SLURM_TASK_PID} with mamba=${MAMBA_EXE}"
 
