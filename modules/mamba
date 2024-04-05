@@ -1,5 +1,5 @@
 #%Module
-  
+
 proc ModulesHelp {} {
     puts stderr "setup a conda environment [uname machine]."
 

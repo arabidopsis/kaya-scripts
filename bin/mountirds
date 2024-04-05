@@ -10,6 +10,7 @@ SHARE="SMS-B-003"
 
 
 directory=~/irds
+# PHEME username and password as a simple 'bash script'
 credentials=~/.irds-credentials
 
 while getopts :d:p:u:c:h flag
