@@ -12,7 +12,7 @@ set MAMBA_ROOT_PREFIX "/group/peb007/micromamba"
 # set CONDA_DEFAULT_ENV (name) in slurm file
 set myenv "[getenv CONDA_DEFAULT_ENV]"
 if { $myenv == "_UNDEFINED_" } {
-    puts stderr "missing \"export CONDA_DEFAULT_ENV=<environment>\" in slurm script"
+    reportError "missing \"export CONDA_DEFAULT_ENV=<environment>\" in slurm script"
     exit 1
 }
 # these are the environment and PATH variables that 
