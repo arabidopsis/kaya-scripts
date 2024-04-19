@@ -1,0 +1,6 @@
+#%Module
+# slurm file can just run 
+# module load someenv
+# to get a conda environment up
+setenv CONDA_DEFAULT_ENV someenv
+module load mamba
