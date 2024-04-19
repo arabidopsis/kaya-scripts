@@ -8,7 +8,8 @@ proc ModulesHelp {} {
 module-whatis "setup a conda environment"
 
 # we set up micromamba to place MAMBA_ROOT_PREFIX here...
-setenv MAMBA_ROOT_PREFIX "/group/peb007/micromamba"
+set MAMBA_ROOT_PREFIX "/group/peb007/micromamba"
+setenv MAMBA_ROOT_PREFIX $MAMBA_ROOT_PREFIX
 # set CONDA_DEFAULT_ENV (name) in slurm file
 set myenv "[getenv CONDA_DEFAULT_ENV _UNDEFINED_]"
 if { $myenv == "_UNDEFINED_" } {
@@ -20,7 +21,9 @@ if { $myenv == "_UNDEFINED_" } {
 # returns
 setenv CONDA_PREFIX "${MAMBA_ROOT_PREFIX}/envs/${myenv}"
 setenv CONDA_SHLVL "1"
-# setenv CONDA_DEFAULT_ENV "${myenv}"
+# in ~/.kaya_env.sh set
+# export PS1='${CONDA_PROMPT_MODIFIER}\[\e[32m\]\u\[\e[m\]@\h[\[\e[36m\]\W\[\e[m\]]\$ '
 setenv CONDA_PROMPT_MODIFIER "(${myenv}) "
-
+# Need version>=5.1 we have 4.5.2
+# pushenv PS1 "(${myenv}) [getenv PS1]"
 prepend-path PATH "${MAMBA_ROOT_PREFIX}/envs/${myenv}/bin"
