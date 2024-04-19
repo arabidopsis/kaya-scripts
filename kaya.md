@@ -270,7 +270,7 @@ Notes:
 Module for julia. usage: `module load julia/1.10`.
 This is a **tcl** script (https://www.tcl-lang.org/).
 Create a file `/group/peb007/modules/julia/1.10` Then
-add the line `module use --append /group/peb007/modules` to `~/.bash_profile`
+add the line `module use -p /group/peb007/modules` to `~/.bash_profile`
 to add it to `MODULEPATH`.
 
 ```tcl
