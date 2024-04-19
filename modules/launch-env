@@ -1,6 +1,7 @@
 #%Module
 
 proc ModulesHelp {} {
+    # called with `module help launch-env` command
     puts stderr "setup a conda environment [uname machine]."
 
 }
