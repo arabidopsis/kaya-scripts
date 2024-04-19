@@ -19,7 +19,12 @@ if { $myenv == "_UNDEFINED_" } {
 # these are the environment and PATH variables that 
 # `$MAMBA_EXE shell activate py312 --shell bash`
 # returns
-setenv CONDA_PREFIX "${MAMBA_ROOT_PREFIX}/envs/${myenv}"
+set location "${MAMBA_ROOT_PREFIX}/envs/${myenv}"
+if { [file isdirectory $location] == 0 } {
+    reportError "There is no environment at: $location"
+    exit 1
+}
+setenv CONDA_PREFIX "$location"
 setenv CONDA_SHLVL "1"
 # in ~/.kaya_env.sh set
 # export PS1='${CONDA_PROMPT_MODIFIER}\[\e[32m\]\u\[\e[m\]@\h[\[\e[36m\]\W\[\e[m\]]\$ '
