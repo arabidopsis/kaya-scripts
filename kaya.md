@@ -112,11 +112,15 @@ Now run:
 `scp` files to kaya
 `rsync` works too
 
+rsync a directory with ssh e.g. (note forward slashes on directory names)
+
 ```bash
-rsync -av local/directory kaya:
+  rsync -av mydata/ kaya:/group/project/name/mydata/
 ```
 
 ## Running in parallel
+
+
 
 See [Tutorial at CECI](https://support.ceci-hpc.be/doc/_contents/QuickStart/SubmittingJobs/SlurmTutorial.html#going-parallel)
 
