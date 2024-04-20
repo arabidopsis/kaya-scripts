@@ -1,10 +1,13 @@
 #%Module
 proc ModulesHelp {} {
-    puts stderr "setup a micromamba environment [uname machine]."
+    puts stderr "get access to micromamba command on [uname machine]."
 }
 # for module whatis
-module-whatis "setup a micromamba environment"
+module-whatis "get access to micromamba"
+
 set root "/group/peb007/micromamba"
+
+
 setenv MAMBA_ROOT_PREFIX ${root}
 setenv MAMBA_EXE "${root}/bin/micromamba"
 prepend-path PATH "${root}/bin"

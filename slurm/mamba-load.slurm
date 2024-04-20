@@ -11,7 +11,7 @@
 # specify which environment you want
 export CONDA_DEFAULT_ENV=py312
 # load the environment
-module load mamba
+module load launch-env
 
 echo "activated ${CONDA_PREFIX}"
 echo "with python version: $(python -V) @ $(which python)"

@@ -10,6 +10,8 @@ module-whatis "setup a conda environment"
 
 # we set up micromamba to place MAMBA_ROOT_PREFIX here...
 set MAMBA_ROOT_PREFIX "/group/peb007/micromamba"
+
+
 setenv MAMBA_ROOT_PREFIX $MAMBA_ROOT_PREFIX
 # set CONDA_DEFAULT_ENV (name) in slurm file
 set myenv "[getenv CONDA_DEFAULT_ENV _UNDEFINED_]"

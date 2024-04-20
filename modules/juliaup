@@ -1,0 +1,20 @@
+#%Module
+
+# export JULIAUP_DEPOT_PATH=/group/peb007/.julia
+# curl -fsSL https://install.julialang.org | sh
+# specify custom install and place juliaup in /group/peb007/.juliaup
+# mv ~/.julia /group/peb007
+# export PATH=/group/peb007/.juliaup/bin${PATH:+:${PATH}}
+
+proc ModulesHelp {} {
+    puts stderr "get access to juliaup command on [uname machine]."
+}
+# for module whatis
+module-whatis "get access to juliaup"
+
+set root "/group/peb007"
+
+setenv JULIAUP_DEPOT_PATH "${root}/.julia"
+setenv JULIA_DEPOT_PATH   "${root}/.julia"
+
+prepend-path PATH "${root}/.juliaup/bin"
