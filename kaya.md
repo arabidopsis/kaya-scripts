@@ -103,7 +103,7 @@ Now run:
   ssh-keygen -t rsa -b 4096 -f ~/.ssh/kaya
   # This will ask for your *kaya* password
   ssh-copy-id -i ~/.ssh/kaya.pub kaya
-  # should now be able to log straight in!
+  # you should now be able to log straight in!
   ssh kaya
 ```
 
