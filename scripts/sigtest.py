@@ -62,7 +62,7 @@ class Handler:
             return
         if self.signal:
             raise ContinueException()
-        
+
     def teardown(self):
         if self._old:
             signal.signal(self.signum, self._old)
@@ -79,6 +79,7 @@ def get_slurm_jobid() -> str:
     assert re.match("[0-9_-]+", job_id)
     return job_id
 
+
 def requeue() -> int:
     cmd = ["scontrol", "requeue", get_slurm_jobid()]
     try:
@@ -89,20 +90,24 @@ def requeue() -> int:
         # When running a shell command, it should be passed as a single string.
         return call(" ".join(cmd), shell=True)
 
+
 @click.command()
 @click.option("--sleep", "wait", default=5.0)
-@click.option('--auto-requeue', is_flag=True)
-def main(wait: float, auto_requeue:bool) -> None:
+@click.option("--auto-requeue", is_flag=True)
+def main(wait: float, auto_requeue: bool) -> None:
     chpt = Path(f"checkpoint.txt")
+
     def ckpt(idx):
-        print('writing checkpoint', idx)
-        with chpt.open('wt') as fp:
-            fp.write(f'{idx}')
-    def ickpt() ->int:
+        print("writing checkpoint", idx)
+        with chpt.open("wt") as fp:
+            fp.write(f"{idx}")
+
+    def ickpt() -> int:
         if chpt.exists():
-            with Path(f"checkpoint.txt").open('rt') as fp:
+            with Path(f"checkpoint.txt").open("rt") as fp:
                 return int(fp.read().strip())
         return 0
+
     print("pid=", os.getpid())
     handler = Handler(signal.SIGUSR1)
     start = datetime.now()
@@ -123,7 +128,7 @@ def main(wait: float, auto_requeue:bool) -> None:
 
             if auto_requeue:
                 if requeue():
-                    print('requeue failed!')
+                    print("requeue failed!")
             return
 
 
