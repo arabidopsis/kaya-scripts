@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 #SBATCH --partition=work
 #SBATCH -n 1
 #SBATCH -o bioinfo_%j.out

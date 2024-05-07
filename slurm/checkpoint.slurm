@@ -1,8 +1,10 @@
 #!/bin/bash
 #SBATCH --partition=work
 #SBATCH -n 1
-#SBATCH -o bioinfo_%j.out
+#SBATCH -o chkpt_%j.out
 #SBATCH --export=NONE
+#SBATCH --time=0-00:03:00
+#SBATCH --signal=SIGUSR1@90
 # environment created by micromamba env create -n py312 python=3.12
 
 # This is different in that you
@@ -13,9 +15,6 @@ export CONDA_DEFAULT_ENV=py312
 # load the environment
 module load activate-env
 
-echo "activated ${CONDA_PREFIX}"
-echo "with python version: $(python -V) @ $(which python)"
-# run your scripts..
+python scripts/signal.py
 
-module unload activate-env
 echo "done."
