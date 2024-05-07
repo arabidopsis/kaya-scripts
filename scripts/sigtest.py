@@ -43,7 +43,8 @@ class Handler:
     def __init__(self, signum: int, processing: bool = True):
         self.processing = processing
         self.signal = False
-        signal.signal(signum, self)
+        self.signum = signum
+        self._old = signal.signal(signum, self)
 
     def __call__(self, signum: int, frame: Any) -> None:
         self.signal = True
@@ -61,6 +62,11 @@ class Handler:
             return
         if self.signal:
             raise ContinueException()
+        
+    def teardown(self):
+        if self._old:
+            signal.signal(self.signum, self._old)
+
 
 def get_slurm_jobid() -> str:
     array_job_id = os.getenv("SLURM_ARRAY_JOB_ID")
@@ -73,9 +79,15 @@ def get_slurm_jobid() -> str:
     assert re.match("[0-9_-]+", job_id)
     return job_id
 
-def requeue():
+def requeue() -> int:
     cmd = ["scontrol", "requeue", get_slurm_jobid()]
-    call(cmd)
+    try:
+        return call(cmd)
+    except FileNotFoundError:
+        # This can occur if a subprocess call to `scontrol` is run outside a shell context
+        # Re-attempt call (now with shell context). If any error is raised, propagate to user.
+        # When running a shell command, it should be passed as a single string.
+        return call(" ".join(cmd), shell=True)
 
 @click.command()
 @click.option("--sleep", "wait", default=5.0)
@@ -83,6 +95,7 @@ def requeue():
 def main(wait: float, auto_requeue:bool) -> None:
     chpt = Path(f"checkpoint.txt")
     def ckpt(idx):
+        print('writing checkpoint', idx)
         with chpt.open('wt') as fp:
             fp.write(f'{idx}')
     def ickpt() ->int:
@@ -106,10 +119,11 @@ def main(wait: float, auto_requeue:bool) -> None:
         except ContinueException:
             n = datetime.now()
             print("awakened by signal....", n, n - start)
-            ckpt()
+            ckpt(idx)
 
             if auto_requeue:
-                requeue()
+                if requeue():
+                    print('requeue failed!')
             return
 
 
