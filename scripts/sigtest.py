@@ -1,9 +1,10 @@
 from __future__ import annotations
-
+import re
 import os
 import signal
 import time
 from datetime import datetime
+from subprocess import call
 
 from pathlib import Path
 
@@ -61,21 +62,41 @@ class Handler:
         if self.signal:
             raise ContinueException()
 
+def get_slurm_jobid() -> str:
+    array_job_id = os.getenv("SLURM_ARRAY_JOB_ID")
+    if array_job_id is not None:
+        array_task_id = os.environ["SLURM_ARRAY_TASK_ID"]
+        job_id = f"{array_job_id}_{array_task_id}"
+    else:
+        job_id = os.environ["SLURM_JOB_ID"]
+
+    assert re.match("[0-9_-]+", job_id)
+    return job_id
+
+def requeue():
+    cmd = ["scontrol", "requeue", get_slurm_jobid()]
+    call(cmd)
 
 @click.command()
 @click.option("--sleep", "wait", default=5.0)
-def main(wait: float) -> None:
-    def ckpt():
-        jobid = os.environ.get("SLURM_JOBID")
-        Path(f"checkpoint-{jobid}.txt").touch()
-
+@click.option('--auto-requeue', is_flag=True)
+def main(wait: float, auto_requeue:bool) -> None:
+    chpt = Path(f"checkpoint.txt")
+    def ckpt(idx):
+        with chpt.open('wt') as fp:
+            fp.write(f'{idx}')
+    def ickpt() ->int:
+        if chpt.exists():
+            with Path(f"checkpoint.txt").open('rt') as fp:
+                return int(fp.read().strip())
+        return 0
     print("pid=", os.getpid())
     handler = Handler(signal.SIGUSR1)
     start = datetime.now()
-    while True:
+    for idx in range(ickpt(), 100000000):
         try:
             n = datetime.now()
-            print("processing", n, n - start)
+            print("processing", idx, n, n - start)
             sum(range(1000000))
             time.sleep(4)
             if handler.signal:
@@ -86,6 +107,9 @@ def main(wait: float) -> None:
             n = datetime.now()
             print("awakened by signal....", n, n - start)
             ckpt()
+
+            if auto_requeue:
+                requeue()
             return
 
 
