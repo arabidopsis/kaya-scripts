@@ -12,7 +12,6 @@ from typing import Any
 import click
 
 
-
 # from https://stackoverflow.com/questions/18499497/how-to-process-sigterm-signal-gracefully
 class GracefulKiller:
     kill_now: bool = False
@@ -40,9 +39,10 @@ class ContinueException(Exception):
 
 
 class Handler:
-    def __init__(self, processing: bool = True):
+    def __init__(self, signum: int, processing: bool = True):
         self.processing = processing
         self.signal = False
+        signal.signal(signum, self)
 
     def __call__(self, signum: int, frame: Any) -> None:
         self.signal = True
@@ -54,20 +54,28 @@ class Handler:
         self.processing = False
         time.sleep(wait)
         self.processing = True
+
+    def check(self):
+        if self.processing:
+            return
+        if self.signal:
+            raise ContinueException()
+
+
 @click.command()
-@click.option('--sleep', 'wait', default=5.0)
-def main(wait:float) -> None:
+@click.option("--sleep", "wait", default=5.0)
+def main(wait: float) -> None:
     def ckpt():
-        jobid = os.environ.get('SLURM_JOBID')
-        Path(f'checkpoint-{jobid}.txt').touch()
-    print('pid=', os.getpid())
-    handler = Handler()
-    signal.signal(signal.SIGUSR1, handler)
-    i= 0
+        jobid = os.environ.get("SLURM_JOBID")
+        Path(f"checkpoint-{jobid}.txt").touch()
+
+    print("pid=", os.getpid())
+    handler = Handler(signal.SIGUSR1)
+    start = datetime.now()
     while True:
-        i+=1
         try:
-            print('processing', i, datetime.now())
+            n = datetime.now()
+            print("processing", n, n - start)
             sum(range(1000000))
             time.sleep(4)
             if handler.signal:
@@ -75,10 +83,11 @@ def main(wait:float) -> None:
                 raise ContinueException()
             handler.sleep(wait)
         except ContinueException:
-            print("awakened by signal....", datetime.now())
+            n = datetime.now()
+            print("awakened by signal....", n, n - start)
             ckpt()
             return
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

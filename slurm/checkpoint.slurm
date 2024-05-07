@@ -16,7 +16,7 @@
 export CONDA_DEFAULT_ENV=py312
 # load the environment
 module load activate-env
-
-srun python scripts/signal.py
+# pip install click
+srun $(which python) scripts/sigtest.py
 
 echo "done."
