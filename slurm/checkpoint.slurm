@@ -3,7 +3,9 @@
 #SBATCH -n 1
 #SBATCH -o chkpt_%j.out
 #SBATCH --export=NONE
+# run for three minutes
 #SBATCH --time=0-00:03:00
+# signal process 90 seconds before end
 #SBATCH --signal=SIGUSR1@90
 # environment created by micromamba env create -n py312 python=3.12
 
@@ -15,6 +17,6 @@ export CONDA_DEFAULT_ENV=py312
 # load the environment
 module load activate-env
 
-python scripts/signal.py
+srun python scripts/signal.py
 
 echo "done."

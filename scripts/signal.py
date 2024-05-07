@@ -75,7 +75,7 @@ def main(wait:float) -> None:
                 raise ContinueException()
             handler.sleep(wait)
         except ContinueException:
-            print("awakened by signal....")
+            print("awakened by signal....", datetime.now())
             ckpt()
             return
 
