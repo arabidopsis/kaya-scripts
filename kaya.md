@@ -120,8 +120,6 @@ rsync a directory with ssh e.g. (note forward slashes on directory names)
 
 ## Running in parallel
 
-
-
 See [Tutorial at CECI](https://support.ceci-hpc.be/doc/_contents/QuickStart/SubmittingJobs/SlurmTutorial.html#going-parallel)
 
 ```bash
@@ -374,3 +372,18 @@ Run programs dependent scripts from within slurm.
   conda deactivate
   echo "done."
 ```
+
+## Checkpointing
+
+- see `scripts/sigtest.py`
+
+Since the batch model only allows you a finite time to run you need
+to do checkpointing so you can restart where you left off.
+SLURM allows you to send a signal to your process that "times up"!
+with:
+
+```bash
+#SBATCH --signal=SIGUSR1@90
+```
+
+You can catch this event and save a checkpoint and even requeue your job.

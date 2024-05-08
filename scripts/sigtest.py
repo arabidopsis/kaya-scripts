@@ -15,19 +15,37 @@ import click
 
 # from https://stackoverflow.com/questions/18499497/how-to-process-sigterm-signal-gracefully
 class GracefulKiller:
+    """
+    # Use as 
+    try:
+        with GracefulKiller() as prot:
+            # do some work uninterrupted
+            # ...
+            if prot.kill_now:
+                print('not now')
+            # do some more work
+        # do interruptable work
+        # we will just be killed here
+    except ContinueException:
+        print('we got a signal')
+        raise SystemExit(0)
+    
+    """
+
     kill_now: bool = False
 
-    def __init__(self) -> None:
+    def __init__(self, signum: int = signal.SIGTERM) -> None:
         self.kill_now: bool = False
-        self.old: Any = None
+        self.signum = signum
+        self._old: Any = None
 
     def __enter__(self) -> None:
-        self.old = signal.signal(signal.SIGTERM, self.exit_gracefully)
+        self._old = signal.signal(self.signum, self.exit_gracefully)
 
     def __exit__(self, *args: Any) -> None:
-        if self.old is not None:
-            signal.signal(signal.SIGTERM, self.old)
-            self.old = None
+        if self._old is not None:
+            signal.signal(self.signum, self._old)
+            self._old = None
         if self.kill_now:
             raise ContinueException()
 
@@ -39,8 +57,8 @@ class ContinueException(Exception):
     pass
 
 
-class Handler:
-    def __init__(self, signum: int, processing: bool = True):
+class SigHandler:
+    def __init__(self, signum: int, processing: bool = False):
         self.processing = processing
         self.signal = False
         self.signum = signum
@@ -64,9 +82,11 @@ class Handler:
             raise ContinueException()
 
     def teardown(self):
-        if self._old:
+        if self._old is not None:
             signal.signal(self.signum, self._old)
 
+    def __del__(self):
+        if self: self.teardown()
 
 def get_slurm_jobid() -> str:
     array_job_id = os.getenv("SLURM_ARRAY_JOB_ID")
@@ -94,7 +114,11 @@ def requeue() -> int:
 @click.command()
 @click.option("--sleep", "wait", default=5.0)
 @click.option("--auto-requeue", is_flag=True)
-def main(wait: float, auto_requeue: bool) -> None:
+def test_sigint(wait: float, auto_requeue: bool) -> None:
+    """Example of sbatch --signal=SIGUSER@90.
+    
+    See `checkpoint.slurm`
+    """
     chpt = Path(f"checkpoint.txt")
 
     def ckpt(idx):
@@ -109,14 +133,18 @@ def main(wait: float, auto_requeue: bool) -> None:
         return 0
 
     print("pid=", os.getpid())
-    handler = Handler(signal.SIGUSR1)
+    handler = SigHandler(signal.SIGUSR1)
     start = datetime.now()
     for idx in range(ickpt(), 100000000):
         try:
             n = datetime.now()
             print("processing", idx, n, n - start)
+            handler.processing = True
+            # do some "work" without interruption
             sum(range(1000000))
             time.sleep(4)
+            # done with work
+            handler.processing = False
             if handler.signal:
                 print("signaled while working")
                 raise ContinueException()
@@ -133,4 +161,4 @@ def main(wait: float, auto_requeue: bool) -> None:
 
 
 if __name__ == "__main__":
-    main()
+    test_sigint()
