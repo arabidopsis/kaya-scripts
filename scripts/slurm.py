@@ -4,14 +4,14 @@
 # dependencies = ['click']
 # ///
 import os
-from shutil import which
-import subprocess
-import shlex
-import click
-from typing import NoReturn
 from contextlib import suppress
+from shutil import which
+import shlex
+import subprocess
+from typing import NoReturn
 from uuid import uuid4
 
+import click
 
 def run(cmd: list[str]) -> None:
     p = subprocess.run(
