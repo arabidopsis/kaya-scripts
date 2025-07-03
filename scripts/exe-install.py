@@ -38,7 +38,7 @@ def run(cmd: list[str]) -> None:
         capture_output=False,
     )
     if p.returncode:
-        error("comicromambaand failed")
+        error("command failed")
 
 
 def error(msg: str) -> NoReturn:
@@ -100,7 +100,7 @@ def local_option(f):
 
 
 @click.group(
-    epilog=click.style('Comicromambaands to "install" julia packages\n', fg="magenta"),
+    epilog=click.style('Commands to "install" julia packages\n', fg="magenta"),
 )
 def cli() -> None:
     pass
@@ -125,7 +125,7 @@ def install(
     reinstall: bool,
     local: bool,
 ) -> None:
-    """install Chloe, Emicromambaa etc into their own project and create a script to run them."""
+    """install Chloe, Emma etc into their own project and create a script to run them."""
 
     if package is None:
         repo = github_repos[0]
@@ -226,7 +226,7 @@ def executify(
         SHELL = f"""#!/bin/bash
 export JULIA_DEPOT_PATH="{depot_path}"
 exec {julia} --project="{project}" \\
-    --startup-file=no "{julia_script}" -- "$@"
+    --startup-file=no "{julia_script}" "$@"
 """
 
         script = bdir / julia_script.name
@@ -250,31 +250,36 @@ exec {julia} --project="{project}" \\
 @cli.command()
 @click.option("-d", "--deactivate", help="generate deactivation script", is_flag=True)
 @click.option(
-    "-a", "--absolute", help="generate absolute PATH", is_flag=True
+    "-a", "--absolute", help="generate an absolute PATH", is_flag=True
 )
 @click.option("-o", "--output", help="output filename",
               type=click.Path(file_okay=True, dir_okay=False))
 @click.option("-s", "--shell", help="shell to use. e.g. bash, tcsh etc.")
-@click.argument("environment")
+@click.argument("environment", required=False)
 def mamba(
     deactivate: bool,
     absolute: bool,
     output: str | None,
     shell: str | None,
-    environment: str,
+    environment: str | None,
 ) -> None:
     """generate mamba activation/deactivate scripts"""
     micromamba = which("micromamba")
     if micromamba is None:
         error("no micromamba to run!")
 
-    PS1 = re.compile(b"^(PS1=.*)")
+    PS1 = re.compile(b"(:?\n|^)(PS1=.*)")
+    PATH=re.compile(b"export PATH='([^']+)'")
+    if environment is None:
+        environment = os.environ.get('CONDA_DEFAULT_ENV')
+        if environment is None:
+            error("can't determine environment")
 
     name = os.path.basename(environment)
 
     shell = shell or getshell("posix")
 
-    inenv = "CONDA_PREFIX" in os.environ
+    inenv = "CONDA_DEFAULT_ENV" in os.environ
 
     if deactivate:
         if not inenv:
@@ -310,13 +315,24 @@ def mamba(
     # remove PS1
     out = PS1.sub(b"", out)
     if env is not None:
-        out = re.compile(b"PATH='([^']+)'").sub(rb'PATH="\1"', out)  # single to double quotes
+        out = PATH.sub(rb'export PATH="\1"', out)  # single to double quotes
+    # elif deactivate:
+    #     # just remove path
+    #     out = PATH.sub(b'', out)
+    elif deactivate and os.environ.get('UV'): # running under uv
+        m = PATH.search(out)
+        if m:
+            s = os.path.pathsep.encode('ascii')
+            paths = m.group(1).split(s)
+            # remove uv path
+            p = s.join(paths[1:])
+            out = PATH.sub(b"export PATH='" + p + b"'", out)
+                
 
     fname = f"{name}{ext}" if not output else output
     click.secho(f"writing: {fname}", fg="green")
     with open(fname, "wb") as fp:
         fp.write(out)
-
 
 if __name__ == "__main__":
     cli()
