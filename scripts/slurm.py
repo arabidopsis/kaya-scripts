@@ -32,39 +32,42 @@ def error(msg: str) -> NoReturn:
     context_settings=dict(ignore_unknown_options=True, allow_extra_args=True)
 )
 @click.option("--slurm-sleep", "sleep", default=10.0)
-@click.option("--job-name", help="give a name to this job")
+@click.option('--job-name', help='name for job')
+@click.option('--output', help='output filename', type=click.Path(file_okay=True, dir_okay=False))
 @click.option("--script", help="argument is a script")
 @click.pass_context
-def slurm(ctx, sleep: float, job_name: str | None, script: bool):
+def slurm(ctx, sleep: float, script: bool, job_name: str | None, output: str | None):
     sbatch = which("sbatch")
     if sbatch is None:
         error("slurm is not installed!")
     if not ctx.args:
         error("no command to run!")
+
+
     if script:
         slurmsh = ctx.args[0]
+        args = ctx.args[1:]
         if not os.path.isfile(slurmsh):
             error(f"{slurmsh} is not a file!")
-
         remove = False
     else:
         slurmsh = f".slurm-{uuid4()}.sh"
         remove = True
+        args = []
         with open(slurmsh, "wt", encoding="utf8") as fp:
             print("#!/bin/bash", file=fp)
             print(f"sleep {sleep}", file=fp)
             print(shlex.join(ctx.args), file=fp)
 
-    if job_name is None:
-        for a in ctx.args:
-            if not a.startswith("-"):
-                job_name = a
-                break
     try:
         cmds = [sbatch]
+        cmds.append(f'--time=1:00:00') # 1 hour
         if job_name:
-            cmds.append(f"--job-name={job_name}")
-        cmds.append(slurmsh)
+            cmds.append(f'--job-name={job_name}')
+        if output:
+            cmds.append(f'--output={output}')
+
+        cmds.extend([slurmsh, *args])
 
         run(cmds)
     finally:
