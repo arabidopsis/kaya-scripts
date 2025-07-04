@@ -23,17 +23,17 @@ function conny () {
             export CONNY_OLD_PATH="${PATH}"
             OLD_PS1="$PS1"
             PS1="(\033[33m\033[1mconny\033[0m) $PS1"
-            source "$CONNY_ENV_LOCATION/${environment}-activate.sh"
+            \source "$CONNY_ENV_LOCATION/${environment}-activate.sh"
             __conny_hashr
             ;;
         deactivate)
             if [[ -v CONNY_OLD_PATH ]]; then
-                source "$CONNY_ENV_LOCATION/${environment}-deactivate.sh"
+                \source "$CONNY_ENV_LOCATION/${environment}-deactivate.sh"
                 export PATH="${CONNY_OLD_PATH}"
-                unset CONNY_OLD_PATH
+                \unset CONNY_OLD_PATH
                 if [[ -v OLD_PS1 ]]; then
                     PS1="$OLD_PS1"
-                    unset OLD_PS1
+                    \unset OLD_PS1
                 fi
                 __conny_hashr
             else

@@ -13,6 +13,7 @@ from uuid import uuid4
 
 import click
 
+
 def run(cmd: list[str]) -> None:
     p = subprocess.run(
         cmd,
@@ -28,14 +29,13 @@ def error(msg: str) -> NoReturn:
 
 
 @click.command(
-    context_settings=dict(ignore_unknown_options=True, 
-                          allow_extra_args=True)
+    context_settings=dict(ignore_unknown_options=True, allow_extra_args=True)
 )
 @click.option("--slurm-sleep", "sleep", default=10.0)
-@click.option("--job-name", help='give a name to this job')
-@click.option("--script", help='argument is a script')
+@click.option("--job-name", help="give a name to this job")
+@click.option("--script", help="argument is a script")
 @click.pass_context
-def slurm(ctx, sleep:float, job_name:str | None, script:bool):
+def slurm(ctx, sleep: float, job_name: str | None, script: bool):
     sbatch = which("sbatch")
     if sbatch is None:
         error("slurm is not installed!")
@@ -45,10 +45,10 @@ def slurm(ctx, sleep:float, job_name:str | None, script:bool):
         slurmsh = ctx.args[0]
         if not os.path.isfile(slurmsh):
             error(f"{slurmsh} is not a file!")
-    
+
         remove = False
     else:
-        slurmsh = f'.slurm-{uuid4()}.sh'
+        slurmsh = f".slurm-{uuid4()}.sh"
         remove = True
         with open(slurmsh, "wt", encoding="utf8") as fp:
             print("#!/bin/bash", file=fp)
@@ -57,13 +57,13 @@ def slurm(ctx, sleep:float, job_name:str | None, script:bool):
 
     if job_name is None:
         for a in ctx.args:
-            if not a.startswith('-'):
+            if not a.startswith("-"):
                 job_name = a
                 break
     try:
         cmds = [sbatch]
         if job_name:
-            cmds.append( f"--job-name={job_name}")
+            cmds.append(f"--job-name={job_name}")
         cmds.append(slurmsh)
 
         run(cmds)

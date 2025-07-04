@@ -249,11 +249,14 @@ exec {julia} --project="{project}" \\
 
 @cli.command()
 @click.option("-d", "--deactivate", help="generate deactivation script", is_flag=True)
+@click.option("-a", "--absolute", help="generate an absolute PATH", is_flag=True)
+@click.option("--no-path", help="don't output PATH", is_flag=True)
 @click.option(
-    "-a", "--absolute", help="generate an absolute PATH", is_flag=True
+    "-o",
+    "--output",
+    help="output filename",
+    type=click.Path(file_okay=True, dir_okay=False),
 )
-@click.option("-o", "--output", help="output filename",
-              type=click.Path(file_okay=True, dir_okay=False))
 @click.option("-s", "--shell", help="shell to use. e.g. bash, tcsh etc.")
 @click.argument("environment", required=False)
 def mamba(
@@ -262,6 +265,7 @@ def mamba(
     output: str | None,
     shell: str | None,
     environment: str | None,
+    no_path: bool,
 ) -> None:
     """generate mamba activation/deactivate scripts"""
     micromamba = which("micromamba")
@@ -269,9 +273,9 @@ def mamba(
         error("no micromamba to run!")
 
     PS1 = re.compile(b"(:?\n|^)(PS1=.*)")
-    PATH=re.compile(b"export PATH='([^']+)'")
+    PATH = re.compile(b"export PATH='([^']+)'")
     if environment is None:
-        environment = os.environ.get('CONDA_DEFAULT_ENV')
+        environment = os.environ.get("CONDA_DEFAULT_ENV")
         if environment is None:
             error("can't determine environment")
 
@@ -283,7 +287,7 @@ def mamba(
 
     if deactivate:
         if not inenv:
-            error("you are not within a conda environment!")
+            error("you are not within a conda environment! activate one!")
 
         cmd = [micromamba, "shell", "deactivate", "--shell", shell]
         ext = "-deactivate.sh"
@@ -306,7 +310,6 @@ def mamba(
         else:
             env = None
 
-
     p = subprocess.run(cmd, text=False, capture_output=True, env=env)
     if p.returncode:
         error(p.stderr.decode("utf-8").strip())
@@ -314,25 +317,25 @@ def mamba(
     out = p.stdout
     # remove PS1
     out = PS1.sub(b"", out)
-    if env is not None:
-        out = PATH.sub(rb'export PATH="\1"', out)  # single to double quotes
-    # elif deactivate:
-    #     # just remove path
-    #     out = PATH.sub(b'', out)
-    elif deactivate and os.environ.get('UV'): # running under uv
-        m = PATH.search(out)
-        if m:
-            s = os.path.pathsep.encode('ascii')
-            paths = m.group(1).split(s)
-            # remove uv path
-            p = s.join(paths[1:])
-            out = PATH.sub(b"export PATH='" + p + b"'", out)
-                
+    if no_path:
+        out = PATH.sub(b"", out)
+    else:
+        if env is not None:
+            out = PATH.sub(rb'export PATH="\1"', out)  # single to double quotes
+        elif deactivate and os.environ.get("UV"):  # running under uv
+            m = PATH.search(out)
+            if m:
+                s = os.path.pathsep.encode("ascii")
+                paths = m.group(1).split(s)
+                # remove uv path
+                p = s.join(paths[1:])
+                out = PATH.sub(b"export PATH='" + p + b"'", out)
 
     fname = f"{name}{ext}" if not output else output
     click.secho(f"writing: {fname}", fg="green")
     with open(fname, "wb") as fp:
         fp.write(out)
+
 
 if __name__ == "__main__":
     cli()

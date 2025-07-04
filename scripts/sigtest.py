@@ -16,7 +16,7 @@ import click
 # from https://stackoverflow.com/questions/18499497/how-to-process-sigterm-signal-gracefully
 class GracefulKiller:
     """
-    # Use as 
+    # Use as
     try:
         with GracefulKiller() as prot:
             # do some work uninterrupted
@@ -29,7 +29,7 @@ class GracefulKiller:
     except ContinueException:
         print('we got a signal')
         raise SystemExit(0)
-    
+
     """
 
     kill_now: bool = False
@@ -86,7 +86,9 @@ class SigHandler:
             signal.signal(self.signum, self._old)
 
     def __del__(self):
-        if self: self.teardown()
+        if self:
+            self.teardown()
+
 
 def get_slurm_jobid() -> str:
     array_job_id = os.getenv("SLURM_ARRAY_JOB_ID")
@@ -116,10 +118,10 @@ def requeue() -> int:
 @click.option("--auto-requeue", is_flag=True)
 def test_sigint(wait: float, auto_requeue: bool) -> None:
     """Example of sbatch --signal=SIGUSER@90.
-    
+
     See `checkpoint.slurm`
     """
-    chpt = Path(f"checkpoint.txt")
+    chpt = Path("checkpoint.txt")
 
     def ckpt(idx):
         print("writing checkpoint", idx)
