@@ -33,7 +33,7 @@ function conny () {
             PS1="(\033[33m\033[1mconny\033[0m) $PS1"
             \source "$CONNY_ENV_LOCATION/${environment}-activate.sh"
             __conny_hashr
-            echo -e "\033[33m\033[1m${__conny}\033[0m";
+            # echo -e "\033[33m\033[1m${__conny}\033[0m";
             ;;
         deactivate)
             if [[ -v CONNY_OLD_PATH ]]; then

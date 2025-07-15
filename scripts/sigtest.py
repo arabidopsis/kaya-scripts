@@ -130,7 +130,7 @@ def test_sigint(wait: float, auto_requeue: bool) -> None:
 
     def ickpt() -> int:
         if chpt.exists():
-            with Path(f"checkpoint.txt").open("rt") as fp:
+            with Path("checkpoint.txt").open("rt") as fp:
                 return int(fp.read().strip())
         return 0
 

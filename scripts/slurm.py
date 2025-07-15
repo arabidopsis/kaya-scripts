@@ -38,7 +38,7 @@ def error(msg: str) -> NoReturn:
 @click.option("--script", help="argument is a script")
 @click.pass_context
 def slurm(ctx, script: bool, job_name: str | None, output: str | None):
-    
+
     sbatch = which("sbatch")
     if sbatch is None:
         error("slurm is not installed!")
@@ -49,7 +49,7 @@ def slurm(ctx, script: bool, job_name: str | None, output: str | None):
         error(f"unknown option: {ctx.args[0]} (try --help)")
 
     debug = os.environ.get("SLURM_DEBUG")
-    time = os.environ.get("SLURM_MAX_TIME", '1:00:00')
+    time = os.environ.get("SLURM_MAX_TIME", "1:00:00")
 
     if script:
         slurmsh = ctx.args[0]
@@ -79,7 +79,7 @@ def slurm(ctx, script: bool, job_name: str | None, output: str | None):
         cmds.extend([slurmsh, *args])
 
         run(cmds)
-        s = click.style('squeue', fg='magenta', bold=True)
+        s = click.style("squeue", fg="yellow", bold=True)
         click.secho(f"Use `{s}` to track progress of your task.")
     finally:
         if remove:
