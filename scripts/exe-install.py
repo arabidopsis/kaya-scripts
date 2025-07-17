@@ -272,6 +272,8 @@ def mamba(
     if micromamba is None:
         error("no micromamba to run!")
 
+    _,_,toolsdir = get_project()
+
     PS1 = re.compile(b"(:?\n|^)(PS1=.*)")
     PATH = re.compile(b"export PATH='([^']+)'")
     if environment is None:
@@ -306,7 +308,7 @@ def mamba(
         ]
         ext = "-activate.sh"
         if not absolute:
-            env = {"PATH": "${PATH}"}
+            env = {"PATH": fr"{toolsdir}:${{PATH}}"}
         else:
             env = None
 
