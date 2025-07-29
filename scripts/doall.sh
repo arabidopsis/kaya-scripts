@@ -3,9 +3,8 @@
 # git clone https://github.com/arabidopsis/kaya-scripts.git
 # cd kaya-scripts/scripts
 
-TARGET=/mnt/s-ws
-
-CODE_DIR=$TARGET/env
+# where all the code n'stuff will go
+CODE_DIR=/mnt/s-ws/env
 
 sudo mkdir -p $CODE_DIR
 sudo chown conny:conny $CODE_DIR
@@ -15,7 +14,8 @@ sudo chown conny:conny $CODE_DIR
 export JULIAUP_DEPOT_PATH=${CODE_DIR}/julia
 export JULIA_DEPOT_PATH="${JULIAUP_DEPOT_PATH}:"
 
-TOOLSDIR=$JULIAUP_DEPOT_PATH/tools
+# where all the julia "tools" are going to go
+# TOOLSDIR=$JULIAUP_DEPOT_PATH/tools
 
 # install juliaup
 # juliaup will put everything (julia executables) in $JULIAUP_DEPOT_PATH/juliaup directory
@@ -33,14 +33,15 @@ source ~/.bashrc
 "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
 source ~/.bashrc
 # chloe installed into $TOOLSDIR/bin
-uv run exe-install.py install --main=chloe_main  https://github.com/ian-small/Chloe.jl.git
-
+uv run exe-install.py julia install --main=chloe_main  https://github.com/ian-small/Chloe.jl.git
+# uv run exe-install.py julia install --main=main  https://github.com/ian-small/Emma.jl.git
 # create a conda environment 
 SCIENV="${CODE_DIR}/scie4002"
 
 # empty
 micromamba env create --prefix=${SCIENV}
 micromamba activate ${SCIENV}
+# add all required packages
 micromamba install -c conda-forge -c bioconda -c defaults \
     mafft \
     mashtree \
@@ -64,16 +65,16 @@ micromamba deactivate
 uv run exe-install.py mamba ${SCIENV}
 
 # possibly **EDIT** scie4002-activate.sh
-# fix PATH to your liking i.e. Add `$TOOLSDIR/bin` to PATH
+# fix PATH to your liking
 # copy these over
 cp scie4002-activate.sh scie4002-deactivate.sh conny.sh bashrc bash_profile ${CODE_DIR}/
 
 # setup ian small's julia "scripts"
 
 # just create a project with FASTX and BioSequences installed
-uv run exe-install.py install --package=Scripts FASTX BioSequences
+uv run exe-install.py julia install --package=Scripts FASTX BioSequences
 # "executify" the julia scripts
-uv run exe-install.py executify Scripts /mnt/s-ws/everyone/tools/*.jl
+uv run exe-install.py julia executify Scripts /mnt/s-ws/everyone/tools/*.jl
 
 # now, say, fasta2nex.jl should be just a bash script
 # ($TOOLSDIR/bin/fasta2nex.jl)

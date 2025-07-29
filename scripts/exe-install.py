@@ -82,10 +82,10 @@ def getshell(default: str):
 
 def prefix_option(f):
     return click.option(
-        "--prefix",
+        "--tools",
         metavar="TOOL_DIR",
         show_default=True,
-        help="julia tool directory [default is DEPOT_PATH/tools]",
+        help="julia tool directory [default is $JULIA_DEPOT_PATH/tools]",
         type=click.Path(dir_okay=True, file_okay=False),
     )(f)
 
@@ -100,13 +100,19 @@ def local_option(f):
 
 
 @click.group(
-    epilog=click.style('Commands to "install" julia packages\n', fg="magenta"),
+    epilog=click.style('Commands to "install" julia packages setup conda environments etc.\n', fg="magenta"),
 )
 def cli() -> None:
     pass
 
+@cli.group(
+    help=click.style('Commands to "install" julia packages\n', fg="magenta"),
+)
+def julia() -> None:
+    """Manage julia packages and executables"""
 
-@cli.command()
+
+@julia.command()
 @click.option(
     "-m", "--main", help="main function to invoke (will create a script to run this)"
 )
@@ -118,7 +124,7 @@ def cli() -> None:
 )
 @click.argument("github_repos", nargs=-1, required=True)
 def install(
-    prefix: str | Path | None,
+    tools: str | Path | None,
     package: str | None,
     github_repos: tuple[str, ...],
     main: str | None,
@@ -141,8 +147,8 @@ def install(
 
     julia, depot_path, toolsdir = get_project()
 
-    if prefix is not None:
-        toolsdir = prefix
+    if tools is not None:
+        toolsdir = tools
 
     toolsdir = Path(toolsdir).expanduser()
     project = toolsdir / f"{package}_project.jl"
@@ -188,7 +194,7 @@ exec {julia} --project="{project}" \\
     script.chmod(0o755)
 
 
-@cli.command()
+@julia.command()
 @local_option
 @prefix_option
 @click.argument("package", required=True)
@@ -274,6 +280,8 @@ def mamba(
 
     _,_,toolsdir = get_project()
 
+    toolsbin = os.path.join(toolsdir, "bin")
+
     PS1 = re.compile(b"(:?\n|^)(PS1=.*)")
     PATH = re.compile(b"export PATH='([^']+)'")
     if environment is None:
@@ -308,7 +316,7 @@ def mamba(
         ]
         ext = "-activate.sh"
         if not absolute:
-            env = {"PATH": fr"{toolsdir}:${{PATH}}"}
+            env = {"PATH": fr"{toolsbin}:${{PATH}}"}
         else:
             env = None
 
