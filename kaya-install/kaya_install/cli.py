@@ -3,7 +3,7 @@ import click
 
 @click.group(
     epilog=click.style(
-        'Commands to "install" julia packages setup conda environments etc.\n',
+        'Commands to "install" julia packages and setup conda environments etc.\n',
         fg="magenta",
     ),
 )

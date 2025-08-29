@@ -1,13 +1,11 @@
 [project]
 name = "kaya-install"
-version = "0.1.1"
-description = "Add your description here"
+version = "0.1.2"
+description = "Install julia programs and generate micromamba activation scripts"
 readme = "README.md"
 requires-python = ">=3.13"
 
-dependencies =[
-    "click>=8.2.1",
-]
+dependencies = ["click>=8.2.1"]
 [project.scripts]
 kaya = "kaya_install.__main__:cli"
 

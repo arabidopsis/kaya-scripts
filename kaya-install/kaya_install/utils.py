@@ -28,7 +28,8 @@ def run(cmd: list[str]) -> None:
         capture_output=False,
     )
     if p.returncode:
-        error("command failed")
+        c = " ".join(cmd)
+        error(f'command: "{c}" Failed!')
 
 
 def error(msg: str) -> NoReturn:

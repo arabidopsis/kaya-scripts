@@ -7,7 +7,7 @@ import click
 from .cli import cli
 from .utils import get_project, error, run, locate_bin_dir
 
-# e.g. uv run julia-install.py install --main=chloe_main --local https://github.com/ian-small/Chloe.jl.git
+# e.g. kaya install --local --main=chloe_main  https://github.com/ian-small/Chloe.jl.git
 # will give you a chloe executable in ~/.local/bin
 
 
@@ -47,11 +47,11 @@ def julia() -> None:
 @click.option(
     "-p", "--package", help="package name. Taken from first repo name if not set."
 )
-@click.argument("github_repos", nargs=-1, required=True)
+@click.argument("github_repos_or_julia_packages)", nargs=-1, required=True)
 def install(
     tools: str | Path | None,
     package: str | None,
-    github_repos: tuple[str, ...],
+    github_repos_or_julia_packages: tuple[str, ...],
     main: str | None,
     reinstall: bool,
     local: bool,
@@ -59,7 +59,7 @@ def install(
     """install Chloe, Emma etc into their own project and create a script to run them."""
 
     if package is None:
-        repo = github_repos[0]
+        repo = github_repos_or_julia_packages[0]
         if repo.startswith("https://"):
             u = urlparse(repo)
             package = u.path.split("/")[-1]
@@ -89,16 +89,16 @@ def install(
 
     def add(*repos: str) -> None:
         pkgs = "; ".join(pkg(r) for r in repos)
-        run([julia, f"--project={project}", "-e", f"using Pkg; {pkgs}"])
+        run([julia,  "--startup-file=no",  f"--project={project}", "-e", f"using Pkg; {pkgs}"])
 
     if not toolsdir.exists():
         toolsdir.mkdir(parents=True)
 
     click.secho(f"creating project: {project}", fg="yellow")
-    run([julia, "-e", f'using Pkg; Pkg.generate("{project}")'])
+    run([julia, "--startup-file=no", "-e", f'using Pkg; Pkg.generate("{project}")'])
 
     click.secho(f"adding packages to {project}", fg="yellow")
-    add(*github_repos)
+    add(*github_repos_or_julia_packages)
 
     if not main:
         return
@@ -113,8 +113,7 @@ exec {julia} --project="{project}" \\
 
     script = bdir / package.lower()
     click.secho(f"writing: {script}", fg="green", bold=True)
-    with open(script, "wt", encoding="utf8") as fp:
-        fp.write(SHELL)
+    script.write_text(SHELL, encoding="utf8")
 
     script.chmod(0o755)
 
@@ -135,7 +134,10 @@ def executify(
     local: bool,
     prefix: str | Path | None,
 ) -> None:
-    """create a runnable script for julia "script" files"""
+    """create a runnable script for julia "script" files based on package PACKAGE.
+
+    See install --package=PACKAGE github repos or...packages
+    """
 
     toolsdir: str | Path
     julia, depot_path, toolsdir = get_project()
@@ -165,7 +167,6 @@ exec {julia} --project="{project}" \\
         w = "overwriting" if e else "writing"
         fg = "yellow" if e else "green"
         click.secho(f"{w}: {script}", fg=fg, bold=True)
-        with open(script, "wt", encoding="utf8") as fp:
-            fp.write(SHELL)
+        script.write_text(SHELL, encoding='utf8')
 
         script.chmod(0o755)
