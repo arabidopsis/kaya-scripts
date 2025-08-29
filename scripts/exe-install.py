@@ -50,12 +50,15 @@ def get_project(toolsdir: str = "tools") -> tuple[str, str, str]:
     julia = which("julia")
     if julia is None:
         error("can't find julia executable in PATH!")
-    julia = os.path.join(from_julia(julia, "Sys.BINDIR"), "julia")
+    real_julia = os.path.join(from_julia(julia, "Sys.BINDIR"), "julia")
     sep = os.path.pathsep
-    depot_path = from_julia(julia, f'join(DEPOT_PATH, "{sep}")')
-    td, _ = depot_path.split(sep, maxsplit=1)
+    depot_path = from_julia(real_julia, f'join(DEPOT_PATH, "{sep}")')
+    if sep in depot_path:
+        td, _ = depot_path.split(sep, maxsplit=1)
+    else:
+        td = depot_path
     toolsdir = os.path.join(td, toolsdir)
-    return julia, depot_path, toolsdir
+    return real_julia, depot_path, toolsdir
 
 
 def locate_bin_dir(toolsdir: Path, local: bool) -> Path:
@@ -100,10 +103,14 @@ def local_option(f):
 
 
 @click.group(
-    epilog=click.style('Commands to "install" julia packages setup conda environments etc.\n', fg="magenta"),
+    epilog=click.style(
+        'Commands to "install" julia packages setup conda environments etc.\n',
+        fg="magenta",
+    ),
 )
 def cli() -> None:
     pass
+
 
 @cli.group(
     help=click.style('Commands to "install" julia packages\n', fg="magenta"),
@@ -276,9 +283,13 @@ def mamba(
     """generate mamba activation/deactivate scripts"""
     micromamba = which("micromamba")
     if micromamba is None:
-        error("no micromamba to run!")
+        exe = os.environ.get("MAMBA_EXE")
+        if exe is None:
+            error("no micromamba to run!")
+        else:
+            micromamba = exe
 
-    _,_,toolsdir = get_project()
+    _, _, toolsdir = get_project()
 
     toolsbin = os.path.join(toolsdir, "bin")
 
@@ -315,10 +326,10 @@ def mamba(
             shell,
         ]
         ext = "-activate.sh"
+
+        env = {"MAMBA_ROOT_PREFIX": os.environ["MAMBA_ROOT_PREFIX"]}
         if not absolute:
-            env = {"PATH": fr"{toolsbin}:${{PATH}}"}
-        else:
-            env = None
+            env.update({"PATH": f"{toolsbin}:${{PATH}}"})
 
     p = subprocess.run(cmd, text=False, capture_output=True, env=env)
     if p.returncode:
