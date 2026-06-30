@@ -2,7 +2,7 @@ from pathlib import Path
 from shutil import rmtree
 from urllib.parse import urlparse
 
-import click
+import click # type: ignore
 
 from .cli import cli
 from .utils import get_project, error, run, locate_bin_dir
@@ -89,7 +89,15 @@ def install(
 
     def add(*repos: str) -> None:
         pkgs = "; ".join(pkg(r) for r in repos)
-        run([julia,  "--startup-file=no",  f"--project={project}", "-e", f"using Pkg; {pkgs}"])
+        run(
+            [
+                julia,
+                "--startup-file=no",
+                f"--project={project}",
+                "-e",
+                f"using Pkg; {pkgs}",
+            ]
+        )
 
     if not toolsdir.exists():
         toolsdir.mkdir(parents=True)
@@ -167,6 +175,30 @@ exec {julia} --project="{project}" \\
         w = "overwriting" if e else "writing"
         fg = "yellow" if e else "green"
         click.secho(f"{w}: {script}", fg=fg, bold=True)
-        script.write_text(SHELL, encoding='utf8')
+        script.write_text(SHELL, encoding="utf8")
 
         script.chmod(0o755)
+
+
+@julia.command(name="fix")
+def fix_cmd() -> None:
+    from shutil import which
+
+    juliaup = which("juliaup")
+    if juliaup is None:
+        error("can't find juliaup executable in PATH!")
+
+    julia = which("julia")
+    if julia is None:
+        error("can't find julia executable in PATH!")
+
+    jpath = Path(julia)
+    if not jpath.is_symlink():
+        jpath = jpath.resolve()
+        click.secho(f"julia is already fixed to: {jpath}", fg="green")
+        return
+    link = jpath.readlink()
+    if link.name != "julialauncher":
+        click.secho(f"julia is not a link to juliaup launcher: {link}", fg="green")
+        return
+    print(f"OK {link}")
