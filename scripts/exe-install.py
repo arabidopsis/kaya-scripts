@@ -10,9 +10,9 @@ from shutil import which, rmtree
 from typing import NoReturn
 from urllib.parse import urlparse
 
-import click
+import click # type: ignore
 
-# e.g. uv run julia-install.py install --main=chloe_main --local https://github.com/ian-small/Chloe.jl.git
+# e.g. uv run exe-install.py julia install --main=chloe_main --local https://github.com/ian-small/Chloe.jl.git
 # will give you a chloe executable in ~/.local/bin
 
 

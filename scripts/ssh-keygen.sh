@@ -6,6 +6,7 @@ mkdir -p ${KEYS}
 mkdir -p ${KEYS}/public
 mkdir -p ${KEYS}/private
 
+# generate public/private keys for each student
 for dir in ${MOUNT}/s-*
 do
 

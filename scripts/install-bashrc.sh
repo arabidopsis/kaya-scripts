@@ -1,6 +1,7 @@
 #!/bin/bash
 MOUNT=/mnt/s-ws
-
+# ensure each student has a home directory
+# owned by them and with .bashrc/.bash_profile files
 for dir in ${MOUNT}/s-*
 do
 	st=$(basename $dir)
