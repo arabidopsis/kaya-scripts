@@ -11,7 +11,7 @@ import subprocess
 from typing import NoReturn
 from uuid import uuid4
 
-import click
+import click  # type: ignore
 
 
 def run(cmd: list[str]) -> None:
@@ -88,4 +88,4 @@ def slurm(ctx, script: bool, job_name: str | None, output: str | None):
 
 
 if __name__ == "__main__":
-    slurm()
+    slurm() # type: ignore
