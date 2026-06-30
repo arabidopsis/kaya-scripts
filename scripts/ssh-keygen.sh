@@ -1,11 +1,12 @@
 #!/bin/bash
 source ./ssh-functions.sh
 
-mkdir -p keys
-mkdir -p keys/public
-mkdir -p keys/private
+rm -rf ${KEYS}
+mkdir -p ${KEYS}
+mkdir -p ${KEYS}/public
+mkdir -p ${KEYS}/private
 
-for dir in ${MOUNT}s/s-*
+for dir in ${MOUNT}/s-*
 do
 
 	student=$(basename $dir)

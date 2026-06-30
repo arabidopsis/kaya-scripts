@@ -8,7 +8,7 @@ do
     sshdir $student
 done
 
-# edit /etc/ssh/sshd_config so 
+# **edit** /etc/ssh/sshd_config so 
 # Include /etc/ssh/sshd_config.d/*.conf
 # is not commented out
 rm -f /etc/ssh/sshd_config.d/perm.conf
@@ -16,5 +16,5 @@ for dir in ${MOUNT}/s-*
     student=$(basename $dir)
     sshkey $student
 done
-# restart server
+# restart sshd server
 systemctl restart sshd

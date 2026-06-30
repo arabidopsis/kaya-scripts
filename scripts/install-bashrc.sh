@@ -1,10 +1,13 @@
 #!/bin/bash
-for dir in /mnt/s-ws/s-*
+MOUNT=/mnt/s-ws
+
+for dir in ${MOUNT}/s-*
 do
 	st=$(basename $dir)
-	echo "$st: installing"
-	cp /mnt/s-ws/env/bashrc "$dir/.bashrc"
+	echo "$st: installing bashrc"
+	chown $st:$st $dir
+	cp ${MOUNT}/env/bashrc "$dir/.bashrc"
 	chown $st:$st "$dir/.bashrc"
-	cp /mnt/s-ws/env/bash_profile "$dir/.bash_profile"
+	cp ${MOUNT}/env/bash_profile "$dir/.bash_profile"
 	chown $st:$st "$dir/.bash_profile"
 done

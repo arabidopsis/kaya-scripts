@@ -82,4 +82,4 @@ uv run exe-install.py julia executify Scripts /mnt/s-ws/everyone/tools/*.jl
 # correct JULIA_DEPOT_PATH and with FASTX, BioSequences available
 
 # create .bashrc and .bash_profiles in each students directory
-bash ./install-bashrc.sh
+sudo bash ./install-bashrc.sh
