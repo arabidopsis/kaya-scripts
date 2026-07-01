@@ -5,7 +5,7 @@
 import sys
 import secrets
 
-# uv run chpasswd.py > passwords
+# uv run chpasswd.py /mnt/s-ws/s-* > passwords
 # sudo chpasswd < passwords
 d = {}
 for home in sys.argv[1:]:

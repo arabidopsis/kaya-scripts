@@ -13,6 +13,6 @@ do
     echo "DenyUsers ${student}" >> deny-users.conf
 
 done
-
-sudo mv deny-users.conf /etc/ssh/sshd_config.d/
-sudo systemctl restart sshd
+echo "Now Run:"
+echo "sudo mv deny-users.conf /etc/ssh/sshd_config.d/"
+echo "sudo systemctl restart sshd"
